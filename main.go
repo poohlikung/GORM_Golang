@@ -45,4 +45,24 @@ func main() {
 	db.AutoMigrate(&Book{})
 	// db.Migrator().DropColumn(&Book{}, "name")
 
+	// Create Book
+	// newBook := Book{Name: "SEOBOOK", Author: "poohlikung", Description: "Hello world12312", price: 200}
+	// createBook(db, &newBook)
+
+	// getBook
+	// currentBook := getBook(db, 2)
+
+	// updateBook
+	// currentBook.Author = "Heee"
+	// currentBook.price = 4000
+	// updateBook(db, currentBook)
+	// fmt.Print(getBook(db, 1))
+
+	// soft Delete
+	// deleteBook(db,2)
+	// hard Delete
+	// hardDeleteBook(db, 2)
+
+	// search Book by name
+	// fmt.Print(searchBookName(db, "SEOBOOK"))
 }

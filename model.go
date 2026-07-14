@@ -34,6 +34,17 @@ func getBook(db *gorm.DB, id uint) *Book {
 	return &book
 }
 
+// Get all book
+func getBooks(db *gorm.DB) []Book {
+	var books []Book
+	result := db.Find(&books)
+
+	if result.Error != nil {
+		log.Fatalf("Error get Book : %v", result.Error)
+	}
+	return books
+}
+
 func updateBook(db *gorm.DB, book *Book) {
 	result := db.Save(&book)
 	if result.Error != nil {
@@ -65,7 +76,7 @@ func hardDeleteBook(db *gorm.DB, id uint) {
 // search name
 func searchBookName(db *gorm.DB, bookName string) ([]Book, error) {
 	var books []Book
-	result := db.Where("name = ?", bookName).Find(&books)
+	result := db.Where("name = ?", bookName).Order("price").Find(&books)
 	if result.Error != nil {
 		return nil, fmt.Errorf("search book fail: %w", result.Error)
 	}

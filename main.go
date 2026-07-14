@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -43,26 +44,12 @@ func main() {
 	}
 	fmt.Print(db)
 	db.AutoMigrate(&Book{})
-	// db.Migrator().DropColumn(&Book{}, "name")
 
-	// Create Book
-	// newBook := Book{Name: "SEOBOOK", Author: "poohlikung", Description: "Hello world12312", price: 200}
-	// createBook(db, &newBook)
+	app := fiber.New()
 
-	// getBook
-	// currentBook := getBook(db, 2)
+	app.Get("/books", func(c *fiber.Ctx) error {
+		return c.JSON(getBooks(db))
+	})
 
-	// updateBook
-	// currentBook.Author = "Heee"
-	// currentBook.price = 4000
-	// updateBook(db, currentBook)
-	// fmt.Print(getBook(db, 1))
-
-	// soft Delete
-	// deleteBook(db,2)
-	// hard Delete
-	// hardDeleteBook(db, 2)
-
-	// search Book by name
-	// fmt.Print(searchBookName(db, "SEOBOOK"))
+	app.Listen(":8080")
 }

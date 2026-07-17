@@ -9,22 +9,22 @@ import (
 
 type Book struct {
 	gorm.Model
-	Name        string
-	Author      string
-	Description string
-	Price       uint
+	Name        string `json:"name"`
+	Author      string `json:"author"`
+	Description string `json:"description"`
+	Price       uint   `json:"price"`
 }
 
-func createBook(db *gorm.DB, book *Book) {
+func createBook(db *gorm.DB, book *Book) error {
 	result := db.Create(book)
 
 	if result.Error != nil {
-		log.Fatalf("Error creating book :%v", result.Error)
+		return result.Error
 	}
-	fmt.Println("Create Book Success")
+	return nil
 }
 
-func getBook(db *gorm.DB, id uint) *Book {
+func getBook(db *gorm.DB, id int) *Book {
 	var book Book
 	result := db.First(&book, id)
 
@@ -45,32 +45,32 @@ func getBooks(db *gorm.DB) []Book {
 	return books
 }
 
-func updateBook(db *gorm.DB, book *Book) {
+func updateBook(db *gorm.DB, book *Book) error {
 	result := db.Save(&book)
 	if result.Error != nil {
-		log.Fatalf("Error update fail : %v", result.Error)
+		return result.Error
 	}
-	fmt.Print("Update Book success")
+	return nil
 }
 
 // Soft Delete
-func deleteBook(db *gorm.DB, id uint) {
+func deleteBook(db *gorm.DB, id int) error {
 	var book Book
 	result := db.Delete(&book, id)
 	if result.Error != nil {
-		log.Fatalf("Delete Book fail : %v", result.Error)
+		return result.Error
 	}
-	fmt.Print("Delete Book success")
+	return nil
 }
 
 // Hard Delete
-func hardDeleteBook(db *gorm.DB, id uint) {
+func hardDeleteBook(db *gorm.DB, id int) error {
 	var book Book
 	result := db.Unscoped().Delete(&book, id)
 	if result.Error != nil {
-		log.Fatalf("Delete Book fail : %v", result.Error)
+		return result.Error
 	}
-	fmt.Print("Delete Book success")
+	return nil
 }
 
 // search name

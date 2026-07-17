@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	// "golang.org/x/crypto/bcrypt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -19,7 +21,22 @@ const (
 	user     = "myuser"     // as defined in docker-compose.yml
 	password = "mypassword" // as defined in docker-compose.yml
 	dbname   = "mydatabase" // as defined in docker-compose.yml
+
+	jwtSecretKey = "TestSecret"
 )
+
+func authRequired(c *fiber.Ctx) error {
+
+	cookie := c.Cookies("jwt")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecretKey), nil
+	})
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	fmt.Println(token)
+	return c.Next()
+}
 
 func main() {
 	// Configure your PostgreSQL database details here
@@ -44,7 +61,7 @@ func main() {
 		panic("failed to connect to database")
 	}
 	fmt.Print(db)
-	db.AutoMigrate(&Book{})
+	db.AutoMigrate(&Book{}, &User{})
 
 	app := fiber.New()
 	// get Books
@@ -136,6 +153,45 @@ func main() {
 		}
 		return c.JSON(fiber.Map{
 			"message": "Delete Book successful",
+		})
+	})
+
+	//
+	// USER API
+	//
+
+	app.Post("/register", func(c *fiber.Ctx) error {
+		user := new(User)
+		if err := c.BodyParser(user); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		err = createUser(db, user)
+		if err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		return c.JSON(fiber.Map{
+			"messege": "Register successful",
+		})
+	})
+
+	app.Post("/login", func(c *fiber.Ctx) error {
+		user := new(User)
+		if err := c.BodyParser(user); err != nil {
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+		token, err := loginUser(db, user)
+		if err != nil {
+			return c.SendStatus(fiber.StatusUnauthorized)
+		}
+
+		c.Cookie(&fiber.Cookie{
+			Name:     "jwt",
+			Value:    token,
+			Expires:  time.Now().Add(time.Hour * 72),
+			HTTPOnly: true,
+		})
+		return c.JSON(fiber.Map{
+			"message": "login succesful",
 		})
 	})
 

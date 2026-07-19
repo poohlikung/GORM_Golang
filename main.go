@@ -28,13 +28,15 @@ const (
 func authRequired(c *fiber.Ctx) error {
 
 	cookie := c.Cookies("jwt")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(cookie, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecretKey), nil
 	})
-	if err != nil {
+	if err != nil || !token.Valid {
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
-	fmt.Println(token)
+
+	claim := token.Claims.(jwt.MapClaims)
+	fmt.Println(claim)
 	return c.Next()
 }
 
@@ -64,6 +66,8 @@ func main() {
 	db.AutoMigrate(&Book{}, &User{})
 
 	app := fiber.New()
+
+	app.Use("/book", authRequired)
 	// get Books
 	app.Get("/book", func(c *fiber.Ctx) error {
 		return c.JSON(getBooks(db))
